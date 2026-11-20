@@ -31,13 +31,16 @@ function isPostUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
   let parsed: URL;
   try {
-    parsed = new URL(value);
+    // Tolerate stray whitespace around the URL (e.g. from a copy-paste).
+    parsed = new URL(value.trim());
   } catch {
     return false;
   }
   if (parsed.protocol !== "https:") return false;
   if (parsed.hostname !== "x.com" && parsed.hostname !== "twitter.com") return false;
-  return /^\/[^/]+\/status\/\d+$/.test(parsed.pathname);
+  // Real X status IDs are 18-19 digits; require at least 15 so a
+  // placeholder or truncated ID is rejected.
+  return /^\/[^/]+\/status\/\d{15,}$/.test(parsed.pathname);
 }
 
 const sourcePath = join(BOT_DIR, POST_FILE);
